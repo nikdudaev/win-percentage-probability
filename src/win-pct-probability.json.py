@@ -5,7 +5,7 @@ from datetime import datetime
 import json
 import sys
 
-df = pd.read_csv('../data-repository/retrosheet/win_loss_records_yankees.csv')
+df = pd.read_csv('src/win_loss_records_yankees.csv')
 df = df.loc[:, ['season', 'game_number', 'winning_pct']]
 final_season_win_pct = df.sort_values('season').groupby('season').tail(1)
 historical_win_pct = np.array(final_season_win_pct[~final_season_win_pct['season'].isin([2024])]['winning_pct'].tolist())

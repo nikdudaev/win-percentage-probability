@@ -8,6 +8,11 @@ toc: false
   <a href="https://observablehq.com/framework/getting-started">Get started<span style="display: inline-block; margin-left: 0.25rem;">↗︎</span></a>
 </div>
 
+```js
+const data = await FileAttachment("win-pct-probability.json.py").json();
+console.log(data);
+```
+
 <div class="grid grid-cols-2" style="grid-auto-rows: 504px;">
   <div class="card">${
     resize((width) => Plot.plot({
