@@ -12,7 +12,8 @@
     "@observablehq/framework": "^1.9.0",
     "arquero": "^5.4.1",
     "d3-dsv": "^3.0.1",
-    "d3-time-format": "^4.1.0"
+    "d3-time-format": "^4.1.0",
+    "jstat": "^1.9.6"
   },
   "devDependencies": {
     "rimraf": "^5.0.5"

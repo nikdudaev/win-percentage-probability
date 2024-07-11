@@ -3,60 +3,113 @@ toc: false
 ---
 
 <div class="hero">
-  <h1>Yankees Win % Probability</h1>
-  <h2>Welcome to your new project! Edit&nbsp;<code style="font-size: 90%;">src/index.md</code> to change this page.</h2>
-  <a href="https://observablehq.com/framework/getting-started">Get started<span style="display: inline-block; margin-left: 0.25rem;">↗︎</span></a>
+  <h1>Yankees Win % Probability in 2024</h1>
 </div>
 
 ```js
-const data = await FileAttachment("win-pct-probability.json.py").json();
-console.log(data);
+// import jStat from 'jstat';
+import * as aq from 'npm:arquero';
+import op from 'npm:arquero';
+import {prior, posterior, calculateParameters, calculateCDF, calculateBucketsProbabilities} from './components/beta-distribution.js';
+const win_percentage_buckets = [
+  [0, 0.45],
+  [0.46, 0.5],
+  [0.51, 0.55],
+  [0.56, 0.6],
+  [0.61, 0.65],
+  [0.66, 0.7],
+  [0.71, 0.75],
+  [0.76, 1.0]
+];
+
+const data = aq.fromCSV(await FileAttachment("./data/win_loss_records_yankees.csv").text());
+const seasonWinPercentage = data
+  .groupby("season")
+  .rollup({
+    max_games: (d) => op.max(d.game_number)
+  })
+  .ungroup()
+  .join_right(data.select("season", "game_number", "winning_pct"))
+  .orderby((d) => d.season)
+  .filter((d) => d.game_number === d.max_games)
+  .select("season", "game_number", "winning_pct")
+  .derive({ season: (d) => "" + d.season })
+  .reify();
+const historical_win_percentages = seasonWinPercentage
+  .filter((d) => d.season != "2024")
+  .array("winning_pct");
+const current_game_number = seasonWinPercentage
+  .filter((d) => d.season == 2024)
+  .array("game_number")[0];
+const current_winning_pct = seasonWinPercentage
+  .filter((d) => d.season == 2024)
+  .array("winning_pct")[0];
+const params = calculateParameters(
+  historical_win_percentages,
+  current_winning_pct,
+  current_game_number
+);
+const bucketsProbs = calculateBucketsProbabilities(
+  win_percentage_buckets,
+  params.alpha_posterior,
+  params.beta_posterior
+);
+const probabilities = aq.from(bucketsProbs);
 ```
 
-<div class="grid grid-cols-1" style="grid-auto-rows: 504px;">
+<div class="grid grid-cols-1" style="grid-auto-rows: 600px;">
   <div class="card">${
-    resize((width) => Plot.plot({
-      title: "Your awesomeness over time 🚀",
-      subtitle: "Up and to the right!",
-      width,
-      y: {grid: true, label: "Awesomeness"},
-      marks: [
-        Plot.ruleY([0]),
-        Plot.lineY(aapl, {x: "Date", y: "Close", tip: true})
-      ]
-    }))
+    resize((height) => Plot.plot({
+  width: 1200,
+  height: 600,
+  marginTop: 50,
+  marginBottom: 50,
+  marks: [
+    Plot.axisY({ label: null, ticks: null, tickSize: 0, text: null }),
+    Plot.axisX({
+      label: "Win % Buckets",
+      tickSize: 0,
+      fill: "#26547c",
+      labelOffset: 40
+    }),
+    Plot.lineX(probabilities, {
+      x: "key",
+      y: "value",
+      stroke: "#f8f7ff",
+      strokeWidth: 2,
+      curve: "catmull-rom"
+    }),
+    Plot.dot(probabilities, {
+      x: "key",
+      y: "value",
+      stroke: "#edf6f9",
+      fill: "#ef476f",
+      r: "value"
+    }),
+    Plot.ruleX(probabilities, {
+      x: "key",
+      y: "value",
+      stroke: "#ef476f",
+      strokeWidth: 7
+    }),
+    Plot.text(probabilities, {
+      x: "key",
+      y: "value",
+      text: (d) => `${d.value.toFixed(1)}%`,
+      lineAnchor: "bottom",
+      dy: -35,
+      dx: 5,
+      fill: "#26547c",
+      fontSize: 18,
+      textAnchor: "middle",
+      frameAnchor: "middle"
+    })
+  ]
+}))
   }</div>
 </div>
 
 ---
-
-## Next steps
-
-Here are some ideas of things you could try…
-
-<div class="grid grid-cols-4">
-  <div class="card">
-    Chart your own data using <a href="https://observablehq.com/framework/lib/plot"><code>Plot</code></a> and <a href="https://observablehq.com/framework/files"><code>FileAttachment</code></a>. Make it responsive using <a href="https://observablehq.com/framework/display#responsive-display"><code>resize</code></a>.
-  </div>
-  <div class="card">
-    Create a <a href="https://observablehq.com/framework/project-structure">new page</a> by adding a Markdown file (<code>whatever.md</code>) to the <code>src</code> folder.
-  </div>
-  <div class="card">
-    Add a drop-down menu using <a href="https://observablehq.com/framework/inputs/select"><code>Inputs.select</code></a> and use it to filter the data shown in a chart.
-  </div>
-  <div class="card">
-    Write a <a href="https://observablehq.com/framework/loaders">data loader</a> that queries a local database or API, generating a data snapshot on build.
-  </div>
-  <div class="card">
-    Import a <a href="https://observablehq.com/framework/imports">recommended library</a> from npm, such as <a href="https://observablehq.com/framework/lib/leaflet">Leaflet</a>, <a href="https://observablehq.com/framework/lib/dot">GraphViz</a>, <a href="https://observablehq.com/framework/lib/tex">TeX</a>, or <a href="https://observablehq.com/framework/lib/duckdb">DuckDB</a>.
-  </div>
-  <div class="card">
-    Ask for help, or share your work or ideas, on the <a href="https://talk.observablehq.com/">Observable forum</a>.
-  </div>
-  <div class="card">
-    Visit <a href="https://github.com/observablehq/framework">Framework on GitHub</a> and give us a star. Or file an issue if you’ve found a bug!
-  </div>
-</div>
 
 <style>
 
@@ -65,32 +118,21 @@ Here are some ideas of things you could try…
   flex-direction: column;
   align-items: center;
   font-family: var(--sans-serif);
-  margin: 4rem 0 8rem;
+  margin: 10px 0 8px;
   text-wrap: balance;
   text-align: center;
 }
 
 .hero h1 {
-  margin: 1rem 0;
-  padding: 1rem 0;
+  margin: 10px 0;
+  padding: 10px 0;
   max-width: none;
-  font-size: 14vw;
-  font-weight: 900;
-  line-height: 1;
+  font-size: 20px;
+  font-weight: 500;
   background: linear-gradient(30deg, var(--theme-foreground-focus), currentColor);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-.hero h2 {
-  margin: 0;
-  max-width: 34em;
-  font-size: 20px;
-  font-style: initial;
-  font-weight: 500;
-  line-height: 1.5;
-  color: var(--theme-foreground-muted);
 }
 
 @media (min-width: 640px) {
