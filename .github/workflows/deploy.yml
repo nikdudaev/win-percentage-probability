@@ -1,12 +1,12 @@
 name: Deploy
 
-on:
+# on:
   # Run this workflow whenever a new commit is pushed to main.
-  push: {branches: [main]}
+  # push: {branches: [main]}
   # Run this workflow once a week at 10:00 on Wednesday
-  schedule: [{cron: "0 10 * * 3"}]
+  # schedule: [{cron: "0 10 * * 3"}]
   # Run this workflow when triggered manually in GitHub’s UI.
-  workflow_dispatch: {}
+  # workflow_dispatch: {}
 
 jobs:
   deploy:
